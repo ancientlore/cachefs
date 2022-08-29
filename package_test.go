@@ -4,7 +4,7 @@ import (
 	"log"
 	"testing"
 
-	"github.com/golang/groupcache"
+	"github.com/mailgun/groupcache/v2"
 )
 
 func TestMain(t *testing.M) {
