@@ -34,6 +34,14 @@ import (
 	"github.com/mailgun/groupcache/v2"
 )
 
+// A InvalidateCacheFS is a file system with a InvalidateCache method.
+type InvalidateCacheFS interface {
+	fs.FS
+
+	// InvalidateCache invalidates the cache for a path on the FS.
+	InvalidateCache(ctx context.Context, path string) error
+}
+
 // Config stores the configuration settings of your cache.
 type Config struct {
 	GroupName   string        // Name of the groupcache group
@@ -48,6 +56,9 @@ type cacheFS struct {
 	duration time.Duration
 	cache    *groupcache.Group
 }
+
+// Statically declare that cacheFS satisfies InvalidateCacheFS.
+var _ InvalidateCacheFS = (*cacheFS)(nil)
 
 // Open opens the named file.
 //
@@ -175,4 +186,9 @@ func New(innerFS fs.FS, config *Config) fs.FS {
 				return dest.SetBytes(buf.Bytes(), time.Now().Add(config.Duration))
 			})),
 	}
+}
+
+// InvalidateCache invalidates the cache for a path in the filesystem.
+func (cfs *cacheFS) InvalidateCache(ctx context.Context, path string) error {
+	return cfs.cache.Remove(ctx, path)
 }
