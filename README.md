@@ -1,6 +1,6 @@
 # cachefs
 
-Package `cachefs` implements a read-only cache around a `fs.FS`, using `groupcache`.
+Package `cachefs` implements a read-only cache around a `fs.FS`, using mailgun's `groupcache`.
 
 Using `cachefs` is straightforward:
 
@@ -15,7 +15,4 @@ Using `cachefs` is straightforward:
 `cachefs` "wraps" the underlying file system with caching. You can specify groupcache parameters - the group name
 and the cache size.
 
-`groupcache` does not support expiration, but `cachefs` supports quantizing values so that expiration happens
-around the expiration duration provided. Expiration can be disabled by specifying 0 for the duration.
-
-See https://pkg.go.dev/github.com/golang/groupcache for more information on `groupcache`.
+See https://pkg.go.dev/github.com/mailgun/groupcache for more information on `groupcache`.

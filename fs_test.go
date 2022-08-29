@@ -23,6 +23,7 @@ func TestFS(t *testing.T) {
 			fs.WalkDir(fileSys, ".", func(path string, d fs.DirEntry, err error) error {
 				if err != nil {
 					t.Error(err)
+					return err
 				}
 				if path == "" {
 					t.Error("Path is empty")

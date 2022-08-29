@@ -17,7 +17,7 @@ and the cache size.
 groupcache does not support expiration, but cachefs supports quantizing values so that expiration happens
 around the expiration duration provided. Expiration can be disabled by specifying 0 for the duration.
 
-See https://pkg.go.dev/github.com/golang/groupcache for more information on groupcache.
+See https://pkg.go.dev/github.com/mailgun/groupcache for more information on groupcache.
 */
 package cachefs
 
@@ -28,12 +28,10 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"net/url"
-	"strconv"
 	"time"
 
-	"github.com/golang/groupcache"
 	"github.com/google/uuid"
+	"github.com/mailgun/groupcache/v2"
 )
 
 // Config stores the configuration settings of your cache.
@@ -67,14 +65,10 @@ func (cfs *cacheFS) Open(name string) (fs.File, error) {
 
 	var (
 		buf groupcache.ByteView
-		q   = make(url.Values, 2)
 		f   file
 	)
-	t := quantize(time.Now(), cfs.duration, name)
-	q.Set("t", strconv.FormatInt(t, 10))
-	q.Set("path", name)
 	ctx := context.Background()
-	err := cfs.cache.Get(ctx, q.Encode(), groupcache.ByteViewSink(&buf))
+	err := cfs.cache.Get(ctx, name, groupcache.ByteViewSink(&buf))
 	if err != nil {
 		return nil, &fs.PathError{Op: "open", Path: name, Err: err}
 	}
@@ -105,13 +99,7 @@ func New(innerFS fs.FS, config *Config) fs.FS {
 		duration: config.Duration,
 		cache: groupcache.NewGroup(config.GroupName, config.SizeInBytes, groupcache.GetterFunc(
 			func(ctx context.Context, key string, dest groupcache.Sink) error {
-				// Parse query which contains quantize info and path
-				q, err := url.ParseQuery(key)
-				if err != nil {
-					return fmt.Errorf("invalid cache key: %w", err)
-				}
-				// Open file
-				f, err := innerFS.Open(q.Get("path"))
+				f, err := innerFS.Open(key)
 				if err != nil {
 					return err
 				}
@@ -184,7 +172,7 @@ func New(innerFS fs.FS, config *Config) fs.FS {
 				if n != len(data) {
 					return fmt.Errorf("wrote incorrect number of  bytes: %d of %d", n, len(data))
 				}
-				return dest.SetBytes(buf.Bytes())
+				return dest.SetBytes(buf.Bytes(), time.Now().Add(config.Duration))
 			})),
 	}
 }
