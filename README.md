@@ -1,5 +1,7 @@
 # cachefs
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/ancientlore/cachefs.svg)](https://pkg.go.dev/github.com/ancientlore/cachefs)
+
 Package `cachefs` implements a read-only cache around a `fs.FS`, using `groupcache`.
 
 Using `cachefs` is straightforward:
